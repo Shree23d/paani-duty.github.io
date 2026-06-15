@@ -398,6 +398,9 @@ let editingSetup = false;
 let editingNames = false;
 let db = null;
 
+const IDENTITY_KEY = 'pd_identity';
+let identity = localStorage.getItem(IDENTITY_KEY); // person id of whoever is using this device
+
 function todayStr(){
   const d = new Date();
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
@@ -409,7 +412,8 @@ function defaultState(){
     present: {},
     turnCounts: {},
     todayPair: null,
-    history: []
+    history: [],
+    activity: []
   };
 }
 
@@ -422,6 +426,7 @@ function normalizeState(val){
   if(!s.turnCounts) s.turnCounts = {};
   if(s.todayPair === undefined) s.todayPair = null;
   if(!s.history) s.history = [];
+  if(!s.activity) s.activity = [];
   return s;
 }
 
@@ -444,6 +449,32 @@ function rolloverDayIfNeeded(){
 function nameById(id){
   const p = people.find(x=>x.id===id);
   return p ? p.name : "Unknown";
+}
+
+function actorName(){
+  if(identity){
+    const n = nameById(identity);
+    if(n !== "Unknown") return n;
+  }
+  return "Unknown person";
+}
+
+function logActivity(text){
+  const now = new Date();
+  state.activity.unshift({
+    time: now.toISOString(),
+    actor: actorName(),
+    text: text
+  });
+  if(state.activity.length > 30) state.activity = state.activity.slice(0,30);
+}
+
+function formatActivityTime(iso){
+  const d = new Date(iso);
+  const datePart = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  const timePart = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  if(datePart === todayStr()) return timePart;
+  return datePart+" "+timePart;
 }
 
 // ---------- Firebase IO ----------
@@ -483,6 +514,8 @@ function cancelPair(){
 
 function markDone(){
   if(!state.todayPair) return;
+  const n1 = nameById(state.todayPair[0]);
+  const n2 = nameById(state.todayPair[1]);
   state.todayPair.forEach(id=>{
     state.turnCounts[id] = (state.turnCounts[id]||0) + 1;
   });
@@ -491,6 +524,7 @@ function markDone(){
     ids: [...state.todayPair]
   });
   if(state.history.length > 25) state.history = state.history.slice(0,25);
+  logActivity(`Logged trip: ${n1} & ${n2}`);
   state.todayPair = null;
   saveState();
   render();
@@ -499,16 +533,20 @@ function markDone(){
 function undoLast(){
   if(state.history.length === 0) return;
   const last = state.history[0];
+  const names = last.ids.map(id=>nameById(id)).join(' & ');
   last.ids.forEach(id=>{
     state.turnCounts[id] = Math.max(0, (state.turnCounts[id]||0) - 1);
   });
   state.history.shift();
+  logActivity(`Undid trip: ${names}`);
   saveState();
   render();
 }
 
 function adjustCount(id, delta){
   state.turnCounts[id] = Math.max(0, (state.turnCounts[id]||0) + delta);
+  const newCount = state.turnCounts[id];
+  logActivity(`${delta > 0 ? 'Increased' : 'Decreased'} ${nameById(id)}'s count to ${newCount}`);
   saveState();
   render();
 }
@@ -595,6 +633,34 @@ function renderLoading(){
   `;
 }
 
+function renderIdentityPicker(){
+  const app = document.getElementById('app');
+  let chips = '';
+  people.forEach(p=>{
+    chips += `<div class="chip" data-id="${p.id}">${escapeHtml(p.name)}</div>`;
+  });
+  app.innerHTML = `
+    <header class="app-head">
+      <div class="title-block">
+        <h1>🪔 Paani Duty</h1>
+        <p>Quick one-time step on this device</p>
+      </div>
+    </header>
+    <div class="card">
+      <h2>Which one are you?</h2>
+      <p class="sub">This is remembered on this device only. It's used to show who made changes &mdash; like adjusting someone's count &mdash; in the activity log below, so everything stays fair and transparent.</p>
+      <div class="chip-grid">${chips}</div>
+    </div>
+  `;
+  document.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      identity = el.dataset.id;
+      localStorage.setItem(IDENTITY_KEY, identity);
+      render();
+    });
+  });
+}
+
 // ---------- Edit names panel ----------
 
 function toggleEditNames(){
@@ -622,6 +688,11 @@ function render(){
 
   if(!people){
     renderSetup();
+    return;
+  }
+
+  if(!identity || !people.find(p=>p.id===identity)){
+    renderIdentityPicker();
     return;
   }
 
@@ -706,6 +777,22 @@ function render(){
     `;
   }
 
+  // Activity log
+  let activityInner = '';
+  if(state.activity.length === 0){
+    activityInner = `<p class="empty-note">No edits logged yet.</p>`;
+  }else{
+    let items = '';
+    state.activity.slice(0,10).forEach(a=>{
+      items += `
+        <div class="history-item">
+          <span class="h-names">${escapeHtml(a.actor)}: ${escapeHtml(a.text)}</span>
+          <span class="h-date">${formatActivityTime(a.time)}</span>
+        </div>`;
+    });
+    activityInner = `<div class="history-list">${items}</div>`;
+  }
+
   // Edit names panel
   let editPanel = '';
   if(editingNames){
@@ -756,7 +843,7 @@ function render(){
 
     <div class="card">
       <h2>Fairness</h2>
-      <p class="sub">Each jar fills up the more trips someone has done. Emptier jar = more "owed".</p>
+      <p class="sub">Each jar fills up the more trips someone has done. Emptier jar = more "owed". The +/- buttons are for corrections and are logged below with your name.</p>
       <div class="fair-list">${fairRows}</div>
     </div>
 
@@ -765,7 +852,14 @@ function render(){
       ${historyInner}
     </div>
 
+    <div class="card">
+      <h2>Activity log</h2>
+      <p class="sub">Every count adjustment, trip log, and undo is recorded here with who did it.</p>
+      ${activityInner}
+    </div>
+
     <footer>
+      You're using this as <strong>${escapeHtml(nameById(identity))}</strong> &mdash; <span class="btn-ghost" id="switch-identity" style="cursor:pointer;">not you? switch</span><br>
       Bookmark this page or add it to your home screen.<br>
       Everyone shares the same data &mdash; no logins needed.
     </footer>
@@ -789,6 +883,12 @@ function render(){
   if(saveNamesBtn) saveNamesBtn.addEventListener('click', saveEditedNames);
   const cancelEditBtn = document.getElementById('cancel-edit-names');
   if(cancelEditBtn) cancelEditBtn.addEventListener('click', toggleEditNames);
+  const switchIdBtn = document.getElementById('switch-identity');
+  if(switchIdBtn) switchIdBtn.addEventListener('click', ()=>{
+    identity = null;
+    localStorage.removeItem(IDENTITY_KEY);
+    render();
+  });
   document.querySelectorAll('[data-adjust]').forEach(el=>{
     el.addEventListener('click', ()=>adjustCount(el.dataset.id, parseInt(el.dataset.adjust)));
   });
