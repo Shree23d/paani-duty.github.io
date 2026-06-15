@@ -413,6 +413,18 @@ function defaultState(){
   };
 }
 
+// Firebase Realtime Database drops keys whose value is {}, [], or null.
+// Backfill those so the rest of the app can always rely on these fields existing.
+function normalizeState(val){
+  const s = val || {};
+  if(!s.date) s.date = todayStr();
+  if(!s.present) s.present = {};
+  if(!s.turnCounts) s.turnCounts = {};
+  if(s.todayPair === undefined) s.todayPair = null;
+  if(!s.history) s.history = [];
+  return s;
+}
+
 function ensurePeopleInCounts(){
   people.forEach(p=>{
     if(typeof state.turnCounts[p.id] !== 'number') state.turnCounts[p.id] = 0;
@@ -536,7 +548,7 @@ function renderSetup(){
       names.push(v || `Person ${i}`);
     }
     people = names.map((n,i)=>({id:'p'+(i+1), name:n}));
-    state = defaultState();
+    state = normalizeState(defaultState());
     ensurePeopleInCounts();
     await savePeople();
     await saveState();
@@ -808,7 +820,7 @@ if(NOT_CONFIGURED){
 
   db.ref('state').on('value', snap=>{
     const val = snap.val();
-    state = val || defaultState();
+    state = normalizeState(val);
     if(!editingSetup && !editingNames) render();
   });
 }
