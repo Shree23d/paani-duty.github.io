@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paani Duty</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg: #16242B;
+  --surface: #1E333C;
+  --surface-2: #25404B;
+  --ink: #E8EDE9;
+  --ink-dim: #9FB3B8;
+  --aqua: #5FD4D4;
+  --aqua-dim: rgba(95,212,212,0.18);
+  --clay: #E8A87C;
+  --clay-dim: rgba(232,168,124,0.18);
+  --line: rgba(255,255,255,0.08);
+  --good: #7CD992;
+  --warn: #E8A87C;
+  --radius: 16px;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin:0;
+  background: linear-gradient(180deg, #16242B 0%, #122029 100%);
+  color: var(--ink);
+  font-family: 'Work Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.wrap{
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 18px 60px;
+}
+
+header.app-head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.title-block h1{
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+  margin: 0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.title-block p{
+  margin: 4px 0 0;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
+.gear-btn{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 17px;
+  cursor: pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: color .15s, border-color .15s;
+}
+.gear-btn:hover{ color: var(--aqua); border-color: var(--aqua); }
+
+.sync-dot{
+  display:inline-block;
+  width:7px; height:7px;
+  border-radius:50%;
+  background: var(--good);
+  margin-right:6px;
+  box-shadow: 0 0 0 0 rgba(124,217,146,0.6);
+  animation: pulse 2.4s infinite;
+}
+.sync-dot.bad{ background: var(--warn); animation:none; }
+@keyframes pulse{
+  0%{ box-shadow: 0 0 0 0 rgba(124,217,146,0.45); }
+  70%{ box-shadow: 0 0 0 7px rgba(124,217,146,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(124,217,146,0); }
+}
+.sync-row{
+  font-size: 11px;
+  color: var(--ink-dim);
+  display:flex; align-items:center;
+  margin-bottom: 18px;
+}
+
+.card{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.card h2{
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0 0 4px;
+  letter-spacing: 0.3px;
+}
+.card .sub{
+  color: var(--ink-dim);
+  font-size: 12.5px;
+  margin: 0 0 14px;
+  line-height:1.5;
+}
+
+/* Home toggle chips */
+.chip-grid{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip{
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-dim);
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.chip.active{
+  background: var(--aqua-dim);
+  border-color: var(--aqua);
+  color: var(--aqua);
+}
+.chip.active::before{
+  content: "● ";
+  font-size: 9px;
+  vertical-align: middle;
+}
+
+/* Today's trip */
+.pair-display{
+  text-align:center;
+  padding: 18px 10px;
+}
+.pair-display .names{
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--aqua);
+  margin: 0 0 4px;
+}
+.pair-display .label{
+  font-size: 12px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.btn-row{
+  display:flex;
+  gap:10px;
+  margin-top: 14px;
+}
+.btn{
+  flex:1;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+.btn:active{ transform: scale(0.98); }
+.btn-primary{
+  background: var(--aqua);
+  color: #0F2025;
+}
+.btn-primary:hover{ filter: brightness(1.08); }
+.btn-secondary{
+  background: var(--surface-2);
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+}
+.btn-secondary:hover{ color: var(--ink); }
+.btn-ghost{
+  background: transparent;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  font-weight: 500;
+  font-size: 12.5px;
+  padding: 4px;
+}
+.btn:disabled{
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.empty-note{
+  color: var(--ink-dim);
+  font-size: 13.5px;
+  text-align:center;
+  padding: 10px 4px 2px;
+}
+
+/* Fairness jars */
+.fair-list{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fair-row{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+.jar{
+  position: relative;
+  width: 30px;
+  height: 38px;
+  flex-shrink:0;
+  clip-path: polygon(35% 0%, 65% 0%, 65% 14%, 86% 28%, 86% 100%, 14% 100%, 14% 28%, 35% 14%);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.jar-fill{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  background: linear-gradient(180deg, var(--aqua) 0%, #3FA8B0 100%);
+  transition: height .5s ease;
+}
+.fair-name{
+  flex:1;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.fair-name .away-tag{
+  display:block;
+  font-size: 11px;
+  color: var(--ink-dim);
+  font-weight: 400;
+  margin-top:1px;
+}
+.fair-count{
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 18px;
+  min-width: 26px;
+  text-align:center;
+}
+.adjust-btns{
+  display:flex;
+  gap:4px;
+}
+.adjust-btns button{
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-dim);
+  font-size: 13px;
+  cursor:pointer;
+  line-height:1;
+}
+.adjust-btns button:hover{ color: var(--aqua); border-color: var(--aqua); }
+
+/* History */
+.history-list{
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.history-item{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  font-size: 13.5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.history-item:last-child{ border-bottom:none; padding-bottom:0; }
+.history-item .h-names{ font-weight: 500; }
+.history-item .h-date{ color: var(--ink-dim); font-size: 12px; }
+
+/* Setup screen */
+.setup-card{
+  margin-top: 40px;
+}
+.setup-card .field{
+  margin-bottom: 12px;
+}
+.setup-card label{
+  display:block;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  margin-bottom: 5px;
+}
+.setup-card input{
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  color: var(--ink);
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14.5px;
+}
+.setup-card input:focus{
+  outline: none;
+  border-color: var(--aqua);
+}
+
+/* Edit panel */
+.edit-panel{
+  display:none;
+}
+.edit-panel.open{ display:block; }
+
+/* Config notice */
+.config-box{
+  background: var(--surface);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 30px;
+}
+.config-box h2{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  color: var(--clay);
+  margin-top:0;
+}
+.config-box code{
+  display:block;
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: var(--aqua);
+  overflow-x:auto;
+  white-space: pre;
+  margin: 10px 0;
+}
+
+footer{
+  text-align:center;
+  color: var(--ink-dim);
+  font-size: 11.5px;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <!-- rendered by JS -->
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* =========================================================
+   STEP 1: Paste your Firebase config below, replacing the
+   placeholder values. See the setup instructions you were
+   given alongside this file.
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCzHtPUVVXXjYin0CojTxlRjwgiW4HMsxY",
+  authDomain: "paani-duty-8e4a0.firebaseapp.com",
+  databaseURL: "https://paani-duty-8e4a0-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "paani-duty-8e4a0",
+  storageBucket: "paani-duty-8e4a0.firebasestorage.app",
+  messagingSenderId: "938245812706",
+  appId: "1:938245812706:web:901ed6e2f04be447f949bb"
+};
+/* ========================================================= */
+
+const NOT_CONFIGURED = firebaseConfig.apiKey === "YOUR_API_KEY";
+
+let people = undefined;   // undefined = not loaded yet, null = no data yet
+let state = undefined;
+let editingSetup = false;
+let editingNames = false;
+let db = null;
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+}
+
+function defaultState(){
+  return {
+    date: todayStr(),
+    present: {},
+    turnCounts: {},
+    todayPair: null,
+    history: []
+  };
+}
+
+function ensurePeopleInCounts(){
+  people.forEach(p=>{
+    if(typeof state.turnCounts[p.id] !== 'number') state.turnCounts[p.id] = 0;
+  });
+}
+
+function rolloverDayIfNeeded(){
+  const t = todayStr();
+  if(state.date !== t){
+    state.date = t;
+    state.present = {};
+    state.todayPair = null;
+    saveState();
+  }
+}
+
+function nameById(id){
+  const p = people.find(x=>x.id===id);
+  return p ? p.name : "Unknown";
+}
+
+// ---------- Firebase IO ----------
+
+async function saveState(){
+  if(!db) return;
+  try{ await db.ref('state').set(state); }catch(e){ console.error("save state failed", e); }
+}
+async function savePeople(){
+  if(!db) return;
+  try{ await db.ref('people').set(people); }catch(e){ console.error("save people failed", e); }
+}
+
+// ---------- Actions ----------
+
+function togglePresent(id){
+  state.present[id] = !state.present[id];
+  saveState();
+  render();
+}
+
+function pickPair(){
+  const presentIds = people.filter(p=>state.present[p.id]).map(p=>p.id);
+  if(presentIds.length < 2) return;
+  const shuffled = [...presentIds].sort(()=>Math.random()-0.5);
+  shuffled.sort((a,b)=> state.turnCounts[a] - state.turnCounts[b]);
+  state.todayPair = [shuffled[0], shuffled[1]];
+  saveState();
+  render();
+}
+
+function cancelPair(){
+  state.todayPair = null;
+  saveState();
+  render();
+}
+
+function markDone(){
+  if(!state.todayPair) return;
+  state.todayPair.forEach(id=>{
+    state.turnCounts[id] = (state.turnCounts[id]||0) + 1;
+  });
+  state.history.unshift({
+    date: todayStr(),
+    ids: [...state.todayPair]
+  });
+  if(state.history.length > 25) state.history = state.history.slice(0,25);
+  state.todayPair = null;
+  saveState();
+  render();
+}
+
+function undoLast(){
+  if(state.history.length === 0) return;
+  const last = state.history[0];
+  last.ids.forEach(id=>{
+    state.turnCounts[id] = Math.max(0, (state.turnCounts[id]||0) - 1);
+  });
+  state.history.shift();
+  saveState();
+  render();
+}
+
+function adjustCount(id, delta){
+  state.turnCounts[id] = Math.max(0, (state.turnCounts[id]||0) + delta);
+  saveState();
+  render();
+}
+
+// ---------- Setup ----------
+
+function renderSetup(){
+  const app = document.getElementById('app');
+  let fields = '';
+  for(let i=1;i<=6;i++){
+    fields += `
+      <div class="field">
+        <label>Person ${i}</label>
+        <input type="text" id="setup-name-${i}" placeholder="e.g. Rahul">
+      </div>`;
+  }
+  app.innerHTML = `
+    <header class="app-head">
+      <div class="title-block">
+        <h1>🪔 Paani Duty</h1>
+        <p>One-time setup &mdash; add everyone in the flat</p>
+      </div>
+    </header>
+    <div class="card setup-card">
+      <h2>Who's in the flat?</h2>
+      <p class="sub">Enter all 6 names. This is saved for everyone &mdash; only needs to be done once.</p>
+      ${fields}
+      <div class="btn-row">
+        <button class="btn btn-primary" id="setup-save">Save & start</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('setup-save').addEventListener('click', async ()=>{
+    const names = [];
+    for(let i=1;i<=6;i++){
+      const v = document.getElementById(`setup-name-${i}`).value.trim();
+      names.push(v || `Person ${i}`);
+    }
+    people = names.map((n,i)=>({id:'p'+(i+1), name:n}));
+    state = defaultState();
+    ensurePeopleInCounts();
+    await savePeople();
+    await saveState();
+    editingSetup = false;
+    render();
+  });
+}
+
+function renderConfigNeeded(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <header class="app-head">
+      <div class="title-block">
+        <h1>🪔 Paani Duty</h1>
+        <p>Almost there &mdash; one setup step left</p>
+      </div>
+    </header>
+    <div class="config-box">
+      <h2>Connect your Firebase database</h2>
+      <p class="sub">This page needs a Firebase config to store and sync data for everyone. Open this HTML file in a text editor and replace the placeholder values near the top of the &lt;script&gt; section with your project's config:</p>
+      <code>const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  databaseURL: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};</code>
+      <p class="sub">You'll get these values from your Firebase project's settings page. Once saved, reload this page.</p>
+    </div>
+  `;
+}
+
+function renderLoading(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <header class="app-head">
+      <div class="title-block">
+        <h1>🪔 Paani Duty</h1>
+        <p>Loading...</p>
+      </div>
+    </header>
+  `;
+}
+
+// ---------- Edit names panel ----------
+
+function toggleEditNames(){
+  editingNames = !editingNames;
+  render();
+}
+
+async function saveEditedNames(){
+  for(let i=0;i<people.length;i++){
+    const v = document.getElementById(`edit-name-${i}`).value.trim();
+    if(v) people[i].name = v;
+  }
+  await savePeople();
+  editingNames = false;
+  render();
+}
+
+// ---------- Main render ----------
+
+function render(){
+  if(NOT_CONFIGURED){ renderConfigNeeded(); return; }
+  if(people === undefined || state === undefined){ renderLoading(); return; }
+
+  const app = document.getElementById('app');
+
+  if(!people){
+    renderSetup();
+    return;
+  }
+
+  ensurePeopleInCounts();
+  rolloverDayIfNeeded();
+
+  // Home toggle chips
+  let chips = '';
+  people.forEach(p=>{
+    const active = state.present[p.id] ? 'active' : '';
+    chips += `<div class="chip ${active}" data-id="${p.id}">${escapeHtml(p.name)}</div>`;
+  });
+
+  // Today's trip card
+  let pairCardInner = '';
+  const presentCount = people.filter(p=>state.present[p.id]).length;
+  if(state.todayPair){
+    const n1 = nameById(state.todayPair[0]);
+    const n2 = nameById(state.todayPair[1]);
+    pairCardInner = `
+      <div class="pair-display">
+        <p class="label">Going for water</p>
+        <p class="names">${escapeHtml(n1)} &amp; ${escapeHtml(n2)}</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="mark-done">They went ✓</button>
+        <button class="btn btn-secondary" id="cancel-pair">Re-pick</button>
+      </div>
+    `;
+  }else if(presentCount < 2){
+    pairCardInner = `
+      <p class="empty-note">Mark at least 2 people as home to pick today's pair.</p>
+    `;
+  }else{
+    pairCardInner = `
+      <p class="empty-note">No pair picked for today yet.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="pick-pair">Pick today's pair</button>
+      </div>
+    `;
+  }
+
+  // Fairness jars
+  const maxCount = Math.max(1, ...people.map(p=>state.turnCounts[p.id]||0));
+  let fairRows = '';
+  people.forEach(p=>{
+    const count = state.turnCounts[p.id]||0;
+    const pct = Math.round((count/maxCount)*100);
+    const home = state.present[p.id];
+    fairRows += `
+      <div class="fair-row">
+        <div class="jar"><div class="jar-fill" style="height:${pct}%"></div></div>
+        <div class="fair-name">${escapeHtml(p.name)}${home ? '' : '<span class="away-tag">not marked home today</span>'}</div>
+        <div class="fair-count">${count}</div>
+        <div class="adjust-btns">
+          <button data-adjust="-1" data-id="${p.id}">&minus;</button>
+          <button data-adjust="1" data-id="${p.id}">+</button>
+        </div>
+      </div>
+    `;
+  });
+
+  // History
+  let historyInner = '';
+  if(state.history.length === 0){
+    historyInner = `<p class="empty-note">No trips logged yet.</p>`;
+  }else{
+    let items = '';
+    state.history.slice(0,8).forEach(h=>{
+      const names = h.ids.map(id=>nameById(id)).join(' & ');
+      items += `
+        <div class="history-item">
+          <span class="h-names">${escapeHtml(names)}</span>
+          <span class="h-date">${h.date}</span>
+        </div>`;
+    });
+    historyInner = `
+      <div class="history-list">${items}</div>
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn-ghost" id="undo-last">Undo last entry</button>
+      </div>
+    `;
+  }
+
+  // Edit names panel
+  let editPanel = '';
+  if(editingNames){
+    let inputs = '';
+    people.forEach((p,i)=>{
+      inputs += `
+        <div class="field">
+          <label>Person ${i+1}</label>
+          <input type="text" id="edit-name-${i}" value="${escapeAttr(p.name)}">
+        </div>`;
+    });
+    editPanel = `
+      <div class="card edit-panel open">
+        <h2>Edit names</h2>
+        <p class="sub">Renaming keeps everyone's turn history intact.</p>
+        ${inputs}
+        <div class="btn-row">
+          <button class="btn btn-primary" id="save-names">Save names</button>
+          <button class="btn btn-secondary" id="cancel-edit-names">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
+
+  app.innerHTML = `
+    <header class="app-head">
+      <div class="title-block">
+        <h1>🪔 Paani Duty</h1>
+        <p>Fair rotation for the water jar run</p>
+      </div>
+      <button class="gear-btn" id="gear-btn" title="Edit names">⚙</button>
+    </header>
+    <div class="sync-row"><span class="sync-dot"></span> Live &mdash; changes sync to everyone instantly</div>
+
+    ${editPanel}
+
+    <div class="card">
+      <h2>Who's home today?</h2>
+      <p class="sub">Tap your name if you're around the flat today. Only people marked home are eligible to be picked.</p>
+      <div class="chip-grid">${chips}</div>
+    </div>
+
+    <div class="card">
+      <h2>Today's trip</h2>
+      <p class="sub">Picks the 2 people who are home and have done the fewest trips so far &mdash; so empty jars go first.</p>
+      ${pairCardInner}
+    </div>
+
+    <div class="card">
+      <h2>Fairness</h2>
+      <p class="sub">Each jar fills up the more trips someone has done. Emptier jar = more "owed".</p>
+      <div class="fair-list">${fairRows}</div>
+    </div>
+
+    <div class="card">
+      <h2>History</h2>
+      ${historyInner}
+    </div>
+
+    <footer>
+      Bookmark this page or add it to your home screen.<br>
+      Everyone shares the same data &mdash; no logins needed.
+    </footer>
+  `;
+
+  // Bind events
+  document.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>togglePresent(el.dataset.id));
+  });
+  const pickBtn = document.getElementById('pick-pair');
+  if(pickBtn) pickBtn.addEventListener('click', pickPair);
+  const doneBtn = document.getElementById('mark-done');
+  if(doneBtn) doneBtn.addEventListener('click', markDone);
+  const cancelBtn = document.getElementById('cancel-pair');
+  if(cancelBtn) cancelBtn.addEventListener('click', cancelPair);
+  const undoBtn = document.getElementById('undo-last');
+  if(undoBtn) undoBtn.addEventListener('click', undoLast);
+  const gearBtn = document.getElementById('gear-btn');
+  if(gearBtn) gearBtn.addEventListener('click', toggleEditNames);
+  const saveNamesBtn = document.getElementById('save-names');
+  if(saveNamesBtn) saveNamesBtn.addEventListener('click', saveEditedNames);
+  const cancelEditBtn = document.getElementById('cancel-edit-names');
+  if(cancelEditBtn) cancelEditBtn.addEventListener('click', toggleEditNames);
+  document.querySelectorAll('[data-adjust]').forEach(el=>{
+    el.addEventListener('click', ()=>adjustCount(el.dataset.id, parseInt(el.dataset.adjust)));
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function escapeAttr(str){
+  return escapeHtml(str);
+}
+
+// ---------- Init ----------
+
+if(NOT_CONFIGURED){
+  render();
+}else{
+  renderLoading();
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+
+  db.ref('people').on('value', snap=>{
+    const val = snap.val();
+    people = val; // null if nothing saved yet
+    if(!editingSetup && !editingNames) render();
+  });
+
+  db.ref('state').on('value', snap=>{
+    const val = snap.val();
+    state = val || defaultState();
+    if(!editingSetup && !editingNames) render();
+  });
+}
+</script>
+</body>
+</html>
